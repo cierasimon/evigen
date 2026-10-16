@@ -1,0 +1,111 @@
+seed = 42
+fast_dev_run = false
+distributed = false
+quantize = false
+compile = false
+make_dataset = false
+make_database = false
+tune = false
+train = true
+evaluate = false
+# "answerdotai/ModernBERT-large", try mpnet too
+model_id = "answerdotai/ModernBERT-base"
+verbose = true
+
+[dataset]
+in_path = "data/raw/"
+inter_path = "data/intermediate/"
+out_path = "data/processed/"
+source = "clinical_notes"
+name = "duke_asd_clinical_notes"
+table_name = "duke_asd_clinical_notes"
+train_size = 0.8
+chunk_length = 256
+overlap = 32
+
+[dataloader]
+batch_size = 64
+pin_memory = true
+num_workers = 0
+
+[database]
+path = "data/db/"
+num_partitions = 256
+num_sub_vectors = 64
+k_neighbors = 4
+
+[model]
+num_queries = 8
+d_model = 0              # inferred at run time
+nhead = 4
+hidden_dim = 512
+dropout = 0.1
+output_dim = 0           # inferred at run time
+query_ini_random = false
+
+[optimizer]
+lr = 1e-3
+weight_decay = 1e-5
+
+[trainer]
+max_epochs = 10
+checkpoint = "models/checkpoint.pt"
+gradient_clip = 1.0
+ignore_index = -100
+temperature = 1.0
+
+[tuner]
+path = "models/hyperparameters.json"
+n_trials = 10
+prune = false
+
+[hparams]
+[hparams.max_epochs]
+name = "max_epochs"
+low = 3
+high = 20
+[hparams.lr]
+name = "lr"
+low = 1e-5
+high = 1e-2
+[hparams.weight_decay]
+name = "weight_decay"
+low = 1e-8
+high = 1e-2
+[hparams.hidden_dim]
+name = "hidden_dim"
+low = 7             # 2^7 = 128
+high = 10           # 2^10 = 1024
+[hparams.dropout]
+name = "dropout"
+low = 0.0
+high = 0.2
+[hparams.temperature]
+name = "temperature"
+low = 0.1
+high = 2.0
+
+[evaluator]
+path = "data/results.parquet"
+n_bootstraps = 100
+
+
+[clinical]
+cohort_path = "/data/YOUR_PROJECT_ID/EHR Data/Data/cohort_2016_2024/analysis/cohort_wc_asd.csv"
+train_ids_path = "/data/YOUR_PROJECT_ID/EHR Data/Data/cohort_2016_2024/crdm/train_patid.csv"
+test_ids_path = "/data/YOUR_PROJECT_ID/EHR Data/Data/cohort_2016_2024/crdm/test_patid.csv"
+notes_db_path = "/data/YOUR_PROJECT_ID/clinical_notes.sqlite"
+
+validation_size = 0.1
+include_cutoff_date = true
+notes_table = "clinical_notes"
+
+patient_column = "PATID"
+label_column = "ASD"
+cutoff_column = "ENC_DATE_D"
+
+note_patient_column = "Pat_ID"
+note_date_column = "Contact_Date"
+note_text_column = "Note_Text"
+
+sqlite_fetch_size = 2000
