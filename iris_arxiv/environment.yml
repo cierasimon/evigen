@@ -1,0 +1,15 @@
+name: iris
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - python=3.11
+  - python-duckdb
+  - lancedb
+  - pandas
+  - pyarrow
+  - pytorch
+  - sentence-transformers
+  - transformers
+  - pydantic
+  - ruff
