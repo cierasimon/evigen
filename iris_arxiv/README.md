@@ -1,58 +1,53 @@
-# IRIS arXiv
+# IRIS: efficient infinite context retrieval-based classification
 
-This project adapts IRIS for retrieval-based classification of full arXiv
-articles while preserving traceability from every retrieved vector to its
-original source text.
-
-It currently uses three arXiv11 categories:
-
-- `cs.AI`
-- `cs.DS`
-- `cs.PL`
-
-## Installation
+## Development installation
 
 ```bash
-git clone https://github.com/cierasimon/evigen.git
-cd evigen/iris_arxiv
-
 conda env create -f environment.yml
 conda activate iris
+git clone https://github.com/fengnanli-neo/iris.git
+cd iris
 pip install -e .
 ```
 
-## Source-text traceback
+## Usage
+
+To change the program behavior, modify the parameters in `config.toml`, then run
+
+```bash
+python -m iris
+```
+
+## arXiv source-text traceback
+
+This branch extends IRIS so that every retrieved vector chunk can be traced back to its original arXiv text.
 
 Each chunk stored in LanceDB contains:
 
-- `id`: internal document ID;
-- `chunk_id`: chunk number within the document;
-- `offset`: starting token position;
-- `label`: document category;
-- `source_path`: path to the original article;
-- `chunk_text`: exact text span from the article;
-- `vector`: ModernBERT embedding.
+- `id`: internal document ID
+- `chunk_id`: chunk number within the document
+- `offset`: starting token position
+- `label`: document category
+- `source_path`: path to the original `.txt` file
+- `chunk_text`: exact text taken from the original document
+- `vector`: ModernBERT embedding
 
-`chunk_text` is obtained from tokenizer character offsets when the document is
-chunked. It is stored together with the vector, so top-k retrieval can return
-the original evidence without decoding token IDs or reopening the source file.
+The original chunk text is extracted using tokenizer character offsets. It is not reconstructed by decoding token IDs.
 
-## Local synthetic-data test
-
-Generate 60 synthetic articles:
+### Generate synthetic arXiv data
 
 ```bash
 python scripts/generate_fake_arxiv.py
 ```
 
-Build the chunk dataset and LanceDB vector database:
+### Build the synthetic dataset and vector database
 
 ```bash
 PYTHONPATH=src python -m iris \
   --config config.arxiv.fake.toml
 ```
 
-Display top-k chunks with their source paths and original text:
+### Display top-k chunks and their original text
 
 ```bash
 PYTHONPATH=src python scripts/show_arxiv_topk.py \
@@ -60,30 +55,4 @@ PYTHONPATH=src python scripts/show_arxiv_topk.py \
   --split test
 ```
 
-## Download the selected real arXiv11 data
-
-```bash
-python scripts/download_arxiv11.py \
-  --output data/raw/arxiv11/data \
-  --dataset-config default
-```
-
-The downloader exports each article as a text file and creates
-`data/raw/arxiv11/manifest.csv`.
-
-## Duke Compute Cluster
-
-DCC configuration and Slurm templates are provided in:
-
-- `config.arxiv.dcc.build.toml`
-- `config.arxiv.dcc.smoke.toml`
-- `environment.dcc.yml`
-- `requirements.dcc.txt`
-- `slurm/`
-
-Replace `YOUR_NETID` with the appropriate DCC NetID in a local checkout before
-submitting a job. Do not commit personal paths, downloaded datasets, model
-weights, vector databases, or credentials.
-
-The generated datasets, model checkpoints, logs, and vector databases are
-excluded from Git.
+The generated datasets, vector databases, and model checkpoints are excluded from Git.
