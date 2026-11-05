@@ -3,7 +3,7 @@ from typing import Any, Literal
 
 import tomllib
 import torch
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class DatasetConfig(BaseModel):
@@ -48,10 +48,29 @@ class OptimizerConfig(BaseModel):
 class TrainerConfig(BaseModel):
     max_epochs: int
     checkpoint: Path
+    resume_checkpoint: Path | None = None
     ignore_index: int
     gradient_clip: float
     temperature: float
+    train_fraction: float = Field(default=1.0, gt=0.0, le=1.0)
+    early_stopping_patience: int | None = Field(default=None, ge=1)
+    early_stopping_min_delta: float = Field(default=0.0, ge=0.0)
+    minimum_epochs: int = Field(default=1, ge=1)
+    early_stopping_metric: Literal[
+        "validation_loss",
+        "classification_loss",
+    ] = "validation_loss"
     device: str = "cpu"
+
+
+class TeacherLossConfig(BaseModel):
+    enabled: bool = False
+    scores_path: Path | None = None
+    weight: float = 0.0
+    pair_temperature: float = 1.0
+    min_score_gap: float = 0.05
+    score_mode: Literal["real", "shuffled"] = "real"
+    shuffle_seed: int = 42
 
 
 class TunerConfig(BaseModel):
@@ -105,6 +124,7 @@ class Config(BaseModel):
     tuner: TunerConfig
     hparams: HyperparameterConfig
     evaluator: EvaluatorConfig
+    teacher_loss: TeacherLossConfig = Field(default_factory=TeacherLossConfig)
     task: Literal["binary", "multiclass"] = "binary"
 
     def model_post_init(self, __context: Any) -> None:

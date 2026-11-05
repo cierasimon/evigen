@@ -9,7 +9,7 @@ tune = false
 train = false
 evaluate = false
 # "answerdotai/ModernBERT-large", try mpnet too
-model_id = "answerdotai/ModernBERT-base"
+model_id = "answerdotai/ModernBERT-base" 
 verbose = true
 
 [dataset]

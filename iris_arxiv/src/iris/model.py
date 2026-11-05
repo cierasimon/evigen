@@ -51,7 +51,9 @@ class IRIS(nn.Module):
             attn_mask=attn_mask,
             dropout_p=(self.p if self.training else 0.0),
         )
-        out = out.view(B, N, D)  # (batch_size, num_queries, d_model)
+        # Attention returns (batch_size, nhead, num_queries, head_dim).
+        # Move the query dimension back before joining the attention heads.
+        out = out.transpose(1, 2).reshape(B, N, D)
         return out
 
     def forward(self, x: torch.Tensor, padding_mask: torch.Tensor) -> torch.Tensor:
@@ -63,6 +65,6 @@ class IRIS(nn.Module):
 
 
 def make_model(ini_queries: np.ndarray, cfg: ModelConfig):
-    exclude = {"num_queries", "query_ini_random", "device"}
+    exclude = {"num_queries", "query_ini_random", "auto_device_map", "device"}
     model_config = cfg.model_dump(exclude=exclude)
     return IRIS(ini_queries=ini_queries, **model_config)
