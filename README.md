@@ -27,6 +27,23 @@ A clinical-note adaptation of IRIS that:
 - stores chunk vectors together with the corresponding source text;
 - includes synthetic clinical fixtures for local development.
 
+### `iris_mimic`
+
+A MIMIC-IV hypertension prediction adaptation of IRIS that:
+
+- builds a 300-patient pilot cohort with patient-level train, validation, and test splits;
+- processes clinical notes while excluding information after each patient's prediction anchor;
+- embeds clinical-note chunks with ModernBERT and stores vectors in LanceDB;
+- retrieves top-k clinical evidence chunks for risk prediction;
+- uses Qwen3-4B as an offline teacher to score evidence quality, relevance, and shortcut risk;
+- integrates a pairwise teacher-ranking loss with the original IRIS prediction and query-diversity objectives;
+- compares the IRIS baseline (λ = 0) against teacher-guided variants (λ = 0.1, 0.5, and 1.0);
+- includes synthetic-data testing and Duke Compute Cluster workflows.
+
+The IRIS baseline and Qwen3 scoring smoke test have completed successfully. Full teacher-guided evaluations are pending.
+
+**Implementation:** [View `iris_mimic` on its development branch](https://github.com/cierasimon/evigen/tree/iris_mimic/iris_mimic).
+
 ## Data and privacy
 
 No arXiv corpus, model weights, generated vector databases, or real clinical
